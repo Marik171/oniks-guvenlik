@@ -38,7 +38,7 @@ export default function AdminDashboard() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Ürün veya marka ara..."
-              className="border border-neutral-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#000c2d] min-w-[260px]"
+              className="border border-neutral-200 rounded-xl px-4 py-2.5 text-sm text-[#000c2d] placeholder-neutral-400 outline-none focus:border-[#000c2d] min-w-[260px]"
             />
           </div>
 

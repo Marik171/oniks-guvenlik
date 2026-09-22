@@ -84,7 +84,7 @@ export default function ProductForm({ mode, productId, initial }: ProductFormPro
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="border border-neutral-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#000c2d]"
+            className="border border-neutral-200 rounded-xl px-4 py-3 text-sm text-[#000c2d] placeholder-neutral-400 outline-none focus:border-[#000c2d]"
           />
         </div>
         <div className="flex flex-col gap-2">
@@ -93,7 +93,7 @@ export default function ProductForm({ mode, productId, initial }: ProductFormPro
             required
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
-            className="border border-neutral-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#000c2d]"
+            className="border border-neutral-200 rounded-xl px-4 py-3 text-sm text-[#000c2d] placeholder-neutral-400 outline-none focus:border-[#000c2d]"
           />
         </div>
       </div>
@@ -104,7 +104,7 @@ export default function ProductForm({ mode, productId, initial }: ProductFormPro
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as ProductCategory)}
-            className="border border-neutral-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#000c2d]"
+            className="border border-neutral-200 rounded-xl px-4 py-3 text-sm text-[#000c2d] placeholder-neutral-400 outline-none focus:border-[#000c2d]"
           >
             {CATEGORIES.map((c) => (
               <option key={c.id} value={c.id}>{c.label}</option>
@@ -116,7 +116,7 @@ export default function ProductForm({ mode, productId, initial }: ProductFormPro
           <select
             value={iconName}
             onChange={(e) => setIconName(e.target.value as ProductIconName)}
-            className="border border-neutral-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#000c2d]"
+            className="border border-neutral-200 rounded-xl px-4 py-3 text-sm text-[#000c2d] placeholder-neutral-400 outline-none focus:border-[#000c2d]"
           >
             {ICONS.map((i) => (
               <option key={i} value={i}>{i}</option>
@@ -132,7 +132,7 @@ export default function ProductForm({ mode, productId, initial }: ProductFormPro
           value={image}
           onChange={(e) => setImage(e.target.value)}
           placeholder="/images/products/ornek.webp"
-          className="border border-neutral-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#000c2d]"
+          className="border border-neutral-200 rounded-xl px-4 py-3 text-sm text-[#000c2d] placeholder-neutral-400 outline-none focus:border-[#000c2d]"
         />
         <p className="text-xs text-neutral-400">
           Görseli önce <code>public/images/products/</code> klasörüne ekleyip yolunu buraya yazın.
@@ -146,7 +146,7 @@ export default function ProductForm({ mode, productId, initial }: ProductFormPro
           rows={3}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="border border-neutral-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#000c2d]"
+          className="border border-neutral-200 rounded-xl px-4 py-3 text-sm text-[#000c2d] placeholder-neutral-400 outline-none focus:border-[#000c2d]"
         />
       </div>
 
@@ -157,7 +157,7 @@ export default function ProductForm({ mode, productId, initial }: ProductFormPro
             <input
               value={spec}
               onChange={(e) => updateSpec(i, e.target.value)}
-              className="flex-1 border border-neutral-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#000c2d]"
+              className="flex-1 border border-neutral-200 rounded-xl px-4 py-2.5 text-sm text-[#000c2d] placeholder-neutral-400 outline-none focus:border-[#000c2d]"
             />
             <button
               type="button"

@@ -79,7 +79,7 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@oniksguvenlik.com"
-                className="relative z-10 w-full border border-neutral-200 rounded-xl pl-11 pr-4 py-3 text-sm outline-none focus:border-[#000c2d] focus:ring-2 focus:ring-[#000c2d]/10 transition-all"
+                className="relative z-10 w-full border border-neutral-200 rounded-xl pl-11 pr-4 py-3 text-sm text-[#000c2d] placeholder-neutral-400 outline-none focus:border-[#000c2d] focus:ring-2 focus:ring-[#000c2d]/10 transition-all"
               />
             </div>
           </div>
@@ -99,7 +99,7 @@ export default function AdminLoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="relative z-10 w-full border border-neutral-200 rounded-xl pl-11 pr-11 py-3 text-sm outline-none focus:border-[#000c2d] focus:ring-2 focus:ring-[#000c2d]/10 transition-all"
+                className="relative z-10 w-full border border-neutral-200 rounded-xl pl-11 pr-11 py-3 text-sm text-[#000c2d] placeholder-neutral-400 outline-none focus:border-[#000c2d] focus:ring-2 focus:ring-[#000c2d]/10 transition-all"
               />
               <button
                 type="button"
