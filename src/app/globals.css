@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+  
+  --securus-text-primary: #000c2d;
+  --securus-text-secondary: #ffffff;
+  --securus-surface-base: #000000;
+  --securus-text-inverse: #0000ee;
+  --securus-surface-strong: #f1f1f1;
+}
+
+@theme inline {
+  --font-sans: var(--font-instrument-sans), sans-serif;
+  --font-serif: var(--font-instrument-serif), serif;
+  
+  --color-securus-dark: var(--securus-text-primary);
+  --color-securus-light: var(--securus-text-secondary);
+  --color-securus-surface-base: var(--securus-surface-base);
+  --color-securus-surface-strong: var(--securus-surface-strong);
+  
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-instrument-sans), sans-serif;
+}
+
+/* High-fidelity utility classes */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-badge {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Custom crop corner markings styling */
+.crop-corner {
+  width: 14px;
+  height: 14px;
+  border-color: rgba(255, 255, 255, 0.35);
+  position: absolute;
+}
+
+@keyframes marquee-reviews {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee-reviews {
+  display: flex;
+  width: max-content;
+  animation: marquee-reviews 55s linear infinite;
+}
+
+.animate-marquee-reviews:hover {
+  animation-play-state: paused;
+}
+
