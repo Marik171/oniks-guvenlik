@@ -27,16 +27,7 @@ import {
   Clock
 } from "lucide-react";
 import type { Product } from "@/lib/productsService";
-
-const CATEGORIES = [
-  { id: "all", label: "Tüm Ürünler" },
-  { id: "interkom", label: "IP İnterkom & Diafon" },
-  { id: "kamera", label: "Güvenlik Kamerası" },
-  { id: "uydu", label: "Merkezi Uydu & TV" },
-  { id: "akilliev", label: "Akıllı Ev Otomasyonu" },
-  { id: "turnike", label: "Turnike Sistemleri" },
-  { id: "otopark", label: "Otopark & Bariyer" },
-];
+import { getCategoryLabel, getBrandInfo } from "@/lib/catalogMeta";
 
 function ProductIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {
   switch (name) {
@@ -54,51 +45,26 @@ function ProductIcon({ name, className = "w-6 h-6" }: { name: string; className?
   }
 }
 
-const BRAND_TAGLINES: { [key: string]: { tagline: string; description: string } } = {
-  Teknoline: {
-    tagline: "Tek Kablo İnterkom Altyapısı & Merkezi Uydu Dağıtım Sistemleri",
-    description: "Yerli mühendislik gücü ile geliştirilen, tek kablo (TBUS) IP interkom sistemleri, merkezi fiber ve koaksiyel uydu dağıtım çözümleri."
-  },
-  Fanvil: {
-    tagline: "Küresel SIP Standartlarında Akıllı IP İnterkom & Telefonlar",
-    description: "Android ve Linux işletim sistemli, yapay zeka yüz tanıma özellikli, küresel SIP 2.0 ve ONVIF protokollerine uyumlu profesyonel IP interkom donanımları."
-  },
-  Audio: {
-    tagline: "Türkiye'nin Lider Görüntülü Diafon & Apartman Çözümleri",
-    description: "Sıva altı ve sıva üstü lüks dokunmatik daire içi monitörler, apartman zil panelleri ve geniş yetkili servis ağı güvencesi."
-  },
-  "Nexus Visio": {
-    tagline: "Ekonomik, Dijital ve Vidasız Kolay Kurulum Diafon Modelleri",
-    description: "Soketli montaj altyapısı, anti-bloke hat koruması ve dayanıklı şifreli/kartlı apartman zil panelleri içeren bütçe dostu diafon sistemleri."
-  },
-  Makim: {
-    tagline: "Yerli Üretim Turnike ve Geçiş Kontrol Sistemleri",
-    description: "304 paslanmaz çelik gövdeli tripod, yarım boy, boy, hızlı geçiş ve VIP turnike modelleriyle her ölçekte yaya geçiş kontrolü."
-  },
-  "Diğer Çözümler": {
-    tagline: "Turnike, Bariyer, Plaka Tanıma ve Otopark Kontrol Donanımları",
-    description: "Siteniz ve iş merkeziniz için geçiş kontrolü ve çevre güvenliğini sağlayan otopark bariyerleri, plaka tanıma sistemleri ve turnikeler."
-  }
-};
-
-const BRAND_FILTERS = [
-  { id: "all", label: "Tüm Markalar" },
-  { id: "Teknoline", label: "Teknoline" },
-  { id: "Fanvil", label: "Fanvil" },
-  { id: "Audio", label: "Audio" },
-  { id: "Nexus Visio", label: "Nexus Visio" },
-  { id: "Makim", label: "Makim" },
-  { id: "Hikvision", label: "Hikvision" },
-  { id: "Oniks", label: "Diğer Çözümler" }
-];
-
-
 function ServicesContent({ products }: { products: Product[] }) {
   const searchParams = useSearchParams();
   const [selectedBrand, setSelectedBrand] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeModalProduct, setActiveModalProduct] = useState<Product | null>(null);
+
+  // Brands and categories are derived from the live product catalog, so a
+  // new brand/category added in the admin panel automatically appears here
+  // as its own filter — nothing hardcoded to keep in sync.
+  const categories = useMemo(() => {
+    const distinct = Array.from(new Set(products.map((p) => p.category)));
+    distinct.sort((a, b) => getCategoryLabel(a).localeCompare(getCategoryLabel(b)));
+    return [{ id: "all", label: "Tüm Ürünler" }, ...distinct.map((id) => ({ id, label: getCategoryLabel(id) }))];
+  }, [products]);
+
+  const brands = useMemo(() => {
+    const distinct = Array.from(new Set(products.map((p) => p.brand))).sort((a, b) => a.localeCompare(b));
+    return [{ id: "all", label: "Tüm Markalar" }, ...distinct.map((id) => ({ id, label: id }))];
+  }, [products]);
 
   // Sync with URL query parameters
   useEffect(() => {
@@ -107,7 +73,7 @@ function ServicesContent({ products }: { products: Product[] }) {
       setSelectedBrand(brandParam);
     }
     const categoryParam = searchParams.get("category");
-    if (categoryParam && CATEGORIES.some((c) => c.id === categoryParam)) {
+    if (categoryParam && categories.some((c) => c.id === categoryParam)) {
       setSelectedCategory(categoryParam);
     }
     const productParam = searchParams.get("product");
@@ -117,61 +83,28 @@ function ServicesContent({ products }: { products: Product[] }) {
         setActiveModalProduct(found);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, categories, products]);
 
   // Filtered Products
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      // Brand filter matching
-      let matchesBrand = true;
-      if (selectedBrand !== "all") {
-        if (selectedBrand === "Oniks") {
-          matchesBrand = product.brand === "Oniks" || product.brand === "MAS" || product.brand === "Multitek";
-        } else {
-          matchesBrand = product.brand === selectedBrand;
-        }
-      }
-
+      const matchesBrand = selectedBrand === "all" || product.brand === selectedBrand;
       const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
-      const matchesSearch = 
+      const matchesSearch =
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.specs.some(spec => spec.toLowerCase().includes(searchQuery.toLowerCase()));
       return matchesBrand && matchesCategory && matchesSearch;
     });
-  }, [selectedBrand, selectedCategory, searchQuery]);
+  }, [products, selectedBrand, selectedCategory, searchQuery]);
 
-  // Group products by brand sections
+  // Group products by brand — each distinct brand gets its own section
   const brandSections = useMemo(() => {
-    const groups: { [key: string]: Product[] } = {
-      Teknoline: [],
-      Fanvil: [],
-      Audio: [],
-      "Nexus Visio": [],
-      Makim: [],
-      Hikvision: [],
-      "Diğer Çözümler": []
-    };
-
-    filteredProducts.forEach((product) => {
-      if (product.brand === "Teknoline") {
-        groups.Teknoline.push(product);
-      } else if (product.brand === "Fanvil") {
-        groups.Fanvil.push(product);
-      } else if (product.brand === "Audio") {
-        groups.Audio.push(product);
-      } else if (product.brand === "Nexus Visio") {
-        groups["Nexus Visio"].push(product);
-      } else if (product.brand === "Makim") {
-        groups.Makim.push(product);
-      } else if (product.brand === "Hikvision") {
-        groups.Hikvision.push(product);
-      } else {
-        groups["Diğer Çözümler"].push(product);
-      }
-    });
-
+    const groups: { [key: string]: Product[] } = {};
+    for (const product of filteredProducts) {
+      (groups[product.brand] ??= []).push(product);
+    }
     return groups;
   }, [filteredProducts]);
 
@@ -229,7 +162,7 @@ function ServicesContent({ products }: { products: Product[] }) {
           <div className="flex flex-col gap-3">
             <span className="text-[10px] font-extrabold tracking-widest text-[#000c2d] uppercase">Marka Seçimi</span>
             <div className="flex flex-wrap gap-2">
-              {BRAND_FILTERS.map((brand) => (
+              {brands.map((brand) => (
                 <button
                   key={brand.id}
                   onClick={() => setSelectedBrand(brand.id)}
@@ -252,7 +185,7 @@ function ServicesContent({ products }: { products: Product[] }) {
             <div className="flex flex-col gap-3 w-full lg:w-auto">
               <span className="text-[10px] font-extrabold tracking-widest text-[#000c2d] uppercase">Kategori</span>
               <div className="flex gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none max-w-full">
-                {CATEGORIES.map((cat) => (
+                {categories.map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
@@ -302,18 +235,12 @@ function ServicesContent({ products }: { products: Product[] }) {
               if (products.length === 0) return false;
               // If a specific brand is selected, only show that brand
               if (selectedBrand !== "all") {
-                if (selectedBrand === "Oniks") {
-                  return brandName === "Diğer Çözümler";
-                }
                 return brandName === selectedBrand;
               }
               return true;
             })
             .map(([brandName, products]) => {
-              const info = BRAND_TAGLINES[brandName] || {
-                tagline: "Geçiş Kontrol ve Çevre Güvenliği Çözümleri",
-                description: "Siteniz, apartmanınız veya iş merkeziniz için tamamlayıcı güvenlik donanımları, turnikeler, bariyerler ve plaka tanıma sistemleri."
-              };
+              const info = getBrandInfo(brandName);
               
               return (
                 <div key={brandName} className="flex flex-col gap-8 border-t border-neutral-100 pt-12 first:border-0 first:pt-0">
@@ -365,7 +292,7 @@ function ServicesContent({ products }: { products: Product[] }) {
                         {/* Content area */}
                         <div className="flex flex-col gap-3 p-6 md:p-8 flex-grow">
                           <span className="text-[10px] font-extrabold tracking-widest text-neutral-400 uppercase leading-none">
-                            {CATEGORIES.find(c => c.id === product.category)?.label}
+                            {getCategoryLabel(product.category)}
                           </span>
                           
                           <h3 className="text-lg md:text-xl font-bold text-[#000c2d] leading-snug line-clamp-2">
@@ -496,7 +423,7 @@ function ServicesContent({ products }: { products: Product[] }) {
                 {/* Product category & title */}
                 <div className="flex flex-col gap-1.5 text-left">
                   <span className="text-[10px] md:text-xs font-extrabold tracking-widest text-[#000c2d]/65 uppercase leading-none">
-                    {CATEGORIES.find(c => c.id === activeModalProduct.category)?.label}
+                    {getCategoryLabel(activeModalProduct.category)}
                   </span>
                   <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#000c2d] mt-1 leading-snug">
                     {activeModalProduct.name}

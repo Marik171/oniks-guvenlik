@@ -2,19 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ImageOff, Pencil, Search } from "lucide-react";
+import { ImageOff, Pencil, Search, X } from "lucide-react";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { productsService, Product, ProductCategory } from "@/lib/productsService";
-
-const CATEGORIES: { id: ProductCategory; label: string }[] = [
-  { id: "interkom", label: "IP İnterkom & Diafon" },
-  { id: "kamera", label: "Güvenlik Kamerası" },
-  { id: "uydu", label: "Merkezi Uydu & TV" },
-  { id: "akilliev", label: "Akıllı Ev Otomasyonu" },
-  { id: "turnike", label: "Turnike Sistemleri" },
-  { id: "otopark", label: "Otopark & Bariyer" },
-];
+import { getCategoryLabel } from "@/lib/catalogMeta";
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -33,6 +25,12 @@ export default function AdminDashboard() {
     const counts: Record<string, number> = {};
     for (const p of products) counts[p.category] = (counts[p.category] ?? 0) + 1;
     return counts;
+  }, [products]);
+
+  const categories = useMemo(() => {
+    return Array.from(new Set(products.map((p) => p.category))).sort((a, b) =>
+      getCategoryLabel(a).localeCompare(getCategoryLabel(b))
+    );
   }, [products]);
 
   const filtered = useMemo(() => {
@@ -55,11 +53,10 @@ export default function AdminDashboard() {
       list.push(p);
       groups.set(p.category, list);
     }
-    return CATEGORIES.filter((c) => groups.has(c.id)).map((c) => ({
-      ...c,
-      products: groups.get(c.id) ?? [],
-    }));
-  }, [filtered]);
+    return categories
+      .filter((c) => groups.has(c))
+      .map((c) => ({ id: c, label: getCategoryLabel(c), products: groups.get(c) ?? [] }));
+  }, [filtered, categories]);
 
   return (
     <ProtectedRoute>
@@ -71,7 +68,7 @@ export default function AdminDashboard() {
             <div>
               <h1 className="text-2xl font-bold text-[#000c2d]">Ürün Kataloğu</h1>
               <p className="text-sm text-neutral-500 mt-1">
-                {loading ? "Yükleniyor..." : `${products.length} ürün · ${CATEGORIES.filter((c) => categoryCounts[c.id]).length} kategori`}
+                {loading ? "Yükleniyor..." : `${products.length} ürün · ${categories.length} kategori · ${filtered.length} gösteriliyor`}
               </p>
             </div>
             <div className="relative flex items-center w-full md:w-80">
@@ -80,8 +77,17 @@ export default function AdminDashboard() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Ürün veya marka ara..."
-                className="w-full border border-neutral-200 rounded-xl pl-11 pr-4 py-3 text-sm text-[#000c2d] placeholder-neutral-400 outline-none focus:border-[#000c2d] focus:ring-2 focus:ring-[#000c2d]/10 bg-white transition-all"
+                className="w-full border border-neutral-200 rounded-xl pl-11 pr-10 py-3 text-sm text-[#000c2d] placeholder-neutral-400 outline-none focus:border-[#000c2d] focus:ring-2 focus:ring-[#000c2d]/10 bg-white transition-all"
               />
+              {query && (
+                <button
+                  onClick={() => setQuery("")}
+                  className="absolute right-3 p-1 text-neutral-400 hover:text-[#000c2d] transition-colors"
+                  aria-label="Aramayı temizle"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -97,17 +103,17 @@ export default function AdminDashboard() {
             >
               Tümü ({products.length})
             </button>
-            {CATEGORIES.map((c) => (
+            {categories.map((c) => (
               <button
-                key={c.id}
-                onClick={() => setActiveCategory(c.id)}
+                key={c}
+                onClick={() => setActiveCategory(c)}
                 className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
-                  activeCategory === c.id
+                  activeCategory === c
                     ? "bg-[#000c2d] border-[#000c2d] text-white"
                     : "bg-white border-neutral-200 text-neutral-500 hover:border-neutral-300"
                 }`}
               >
-                {c.label} ({categoryCounts[c.id] ?? 0})
+                {getCategoryLabel(c)} ({categoryCounts[c] ?? 0})
               </button>
             ))}
           </div>

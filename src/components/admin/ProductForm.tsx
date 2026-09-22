@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Tv, Video, Smartphone, Cpu, Home, Lock, Shield, Car, Layers, Sliders,
@@ -8,15 +8,7 @@ import {
 } from "lucide-react";
 import { productsService, Product, ProductCategory, ProductIconName } from "@/lib/productsService";
 import { compressImageToWebP } from "@/lib/imageUtils";
-
-const CATEGORIES: { id: ProductCategory; label: string }[] = [
-  { id: "interkom", label: "IP İnterkom & Diafon" },
-  { id: "kamera", label: "Güvenlik Kamerası" },
-  { id: "uydu", label: "Merkezi Uydu & TV" },
-  { id: "akilliev", label: "Akıllı Ev Otomasyonu" },
-  { id: "turnike", label: "Turnike Sistemleri" },
-  { id: "otopark", label: "Otopark & Bariyer" },
-];
+import { getCategoryLabel } from "@/lib/catalogMeta";
 
 const ICONS: { id: ProductIconName; Icon: typeof Shield }[] = [
   { id: "Shield", Icon: Shield },
@@ -46,7 +38,7 @@ export default function ProductForm({ mode, productId, initial }: ProductFormPro
 
   const [name, setName] = useState(initial?.name ?? "");
   const [brand, setBrand] = useState(initial?.brand ?? "");
-  const [category, setCategory] = useState<ProductCategory>(initial?.category ?? "interkom");
+  const [category, setCategory] = useState<ProductCategory>(initial?.category ?? "");
   const [iconName, setIconName] = useState<ProductIconName>(initial?.iconName ?? "Shield");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [image, setImage] = useState(initial?.image ?? "");
@@ -56,6 +48,15 @@ export default function ProductForm({ mode, productId, initial }: ProductFormPro
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [existingBrands, setExistingBrands] = useState<string[]>([]);
+  const [existingCategories, setExistingCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    productsService.getDistinctValues().then(({ brands, categories }) => {
+      setExistingBrands(brands);
+      setExistingCategories(categories);
+    });
+  }, []);
 
   const updateSpec = (i: number, value: string) => {
     setSpecs((prev) => prev.map((s, idx) => (idx === i ? value : s)));
@@ -187,28 +188,73 @@ export default function ProductForm({ mode, productId, initial }: ProductFormPro
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-xs font-bold text-neutral-600 uppercase tracking-wide">Marka</label>
-              <input required value={brand} onChange={(e) => setBrand(e.target.value)} className={inputClass} />
+              <input
+                required
+                list="brand-suggestions"
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                placeholder="Mevcut markayı seçin veya yeni marka yazın"
+                className={inputClass}
+              />
+              <datalist id="brand-suggestions">
+                {existingBrands.map((b) => (
+                  <option key={b} value={b} />
+                ))}
+              </datalist>
+              {existingBrands.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-0.5">
+                  {existingBrands.map((b) => (
+                    <button
+                      key={b}
+                      type="button"
+                      onClick={() => setBrand(b)}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all ${
+                        brand === b
+                          ? "bg-[#000c2d] border-[#000c2d] text-white"
+                          : "bg-white border-neutral-200 text-neutral-500 hover:border-neutral-300"
+                      }`}
+                    >
+                      {b}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
             <label className="text-xs font-bold text-neutral-600 uppercase tracking-wide">Kategori</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {CATEGORIES.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setCategory(c.id)}
-                  className={`text-left px-3.5 py-2.5 rounded-xl text-xs font-bold border transition-all ${
-                    category === c.id
-                      ? "bg-[#000c2d] border-[#000c2d] text-white"
-                      : "bg-white border-neutral-200 text-neutral-500 hover:border-neutral-300"
-                  }`}
-                >
-                  {c.label}
-                </button>
+            <input
+              required
+              list="category-suggestions"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="Mevcut kategoriyi seçin veya yeni kategori yazın"
+              className={inputClass}
+            />
+            <datalist id="category-suggestions">
+              {existingCategories.map((c) => (
+                <option key={c} value={c}>{getCategoryLabel(c)}</option>
               ))}
-            </div>
+            </datalist>
+            {existingCategories.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
+                {existingCategories.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setCategory(c)}
+                    className={`text-left px-3.5 py-2.5 rounded-xl text-xs font-bold border transition-all ${
+                      category === c
+                        ? "bg-[#000c2d] border-[#000c2d] text-white"
+                        : "bg-white border-neutral-200 text-neutral-500 hover:border-neutral-300"
+                    }`}
+                  >
+                    {getCategoryLabel(c)}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">

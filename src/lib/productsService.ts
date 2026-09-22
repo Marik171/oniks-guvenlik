@@ -9,13 +9,11 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 
-export type ProductCategory =
-  | 'interkom'
-  | 'kamera'
-  | 'akilliev'
-  | 'turnike'
-  | 'otopark'
-  | 'uydu';
+// Free-text: the owner can introduce a brand-new category just by typing it
+// on the product form, and it automatically becomes its own filter on both
+// the admin dashboard and the public catalog. See src/lib/catalogMeta.ts for
+// the nicer display labels used for the categories that ship by default.
+export type ProductCategory = string;
 
 export type ProductIconName =
   | 'Tv'
@@ -60,6 +58,13 @@ export const productsService = {
     if (!db) return [];
     const snap = await getDocs(collection(db, COLLECTION));
     return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Product, 'id'>) }));
+  },
+
+  async getDistinctValues(): Promise<{ brands: string[]; categories: string[] }> {
+    const products = await this.getAllProducts();
+    const brands = Array.from(new Set(products.map((p) => p.brand))).sort((a, b) => a.localeCompare(b));
+    const categories = Array.from(new Set(products.map((p) => p.category))).sort((a, b) => a.localeCompare(b));
+    return { brands, categories };
   },
 
   async getProduct(id: string): Promise<Product | null> {
