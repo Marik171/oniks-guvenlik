@@ -42,10 +42,12 @@ export default function ProductForm({ mode, productId, initial }: ProductFormPro
   const [iconName, setIconName] = useState<ProductIconName>(initial?.iconName ?? "Shield");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [image, setImage] = useState(initial?.image ?? "");
+  const [images, setImages] = useState<string[]>(initial?.images ?? []);
   const [specs, setSpecs] = useState<string[]>(initial?.specs?.length ? initial.specs : [""]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [existingBrands, setExistingBrands] = useState<string[]>([]);
@@ -82,6 +84,35 @@ export default function ProductForm({ mode, productId, initial }: ProductFormPro
     }
   };
 
+  const handleGalleryFiles = async (files: FileList | File[] | null) => {
+    const list = Array.from(files ?? []).filter((f) => f.type.startsWith("image/"));
+    if (!list.length) return;
+    setError("");
+    setUploading(true);
+    try {
+      const dataUrls = await Promise.all(list.map((f) => compressImageToWebP(f)));
+      setImages((prev) => [...prev, ...dataUrls]);
+    } catch {
+      setError("Görseller işlenirken bir hata oluştu.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeGalleryImage = (i: number) => {
+    setImages((prev) => prev.filter((_, idx) => idx !== i));
+  };
+
+  const makeCover = (i: number) => {
+    setImages((prev) => {
+      const next = [...prev];
+      const [newCover] = next.splice(i, 1);
+      if (image) next.push(image);
+      setImage(newCover);
+      return next;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -92,7 +123,7 @@ export default function ProductForm({ mode, productId, initial }: ProductFormPro
     setSaving(true);
     try {
       const cleanSpecs = specs.map((s) => s.trim()).filter(Boolean);
-      const product = { name, brand, category, iconName, description, image, specs: cleanSpecs };
+      const product = { name, brand, category, iconName, description, image, images, specs: cleanSpecs };
       if (mode === "create") {
         await productsService.createProduct(product, `${brand}-${name}`);
       } else if (productId) {
@@ -177,6 +208,56 @@ export default function ProductForm({ mode, productId, initial }: ProductFormPro
               <span>Kaydetmeden önce bir görsel yükleyin.</span>
             </div>
           )}
+
+          {/* Additional gallery photos */}
+          <div className="flex flex-col gap-2 mt-2">
+            <label className="text-xs font-bold text-neutral-600 uppercase tracking-wide">
+              Ek Fotoğraflar {images.length > 0 && `(${images.length})`}
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {images.map((img, i) => (
+                <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-neutral-200 bg-neutral-50 group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img} alt={`Ek görsel ${i + 1}`} className="w-full h-full object-contain p-1" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                    <button
+                      type="button"
+                      onClick={() => makeCover(i)}
+                      title="Kapak yap"
+                      className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-[#000c2d] text-[10px] font-bold"
+                    >
+                      ★
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeGalleryImage(i)}
+                      title="Kaldır"
+                      className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-red-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => galleryInputRef.current?.click()}
+                className="aspect-square rounded-xl border-2 border-dashed border-neutral-300 hover:border-neutral-400 flex items-center justify-center text-neutral-400 hover:text-neutral-600 transition-colors"
+                aria-label="Fotoğraf ekle"
+              >
+                <Plus className="w-5 h-5" />
+              </button>
+            </div>
+            <input
+              ref={galleryInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => { handleGalleryFiles(e.target.files); e.target.value = ""; }}
+            />
+            <span className="text-[10px] text-neutral-400">Birden fazla fotoğraf seçebilirsiniz. Yıldıza tıklayarak kapak fotoğrafını değiştirin.</span>
+          </div>
         </div>
 
         {/* Fields column */}

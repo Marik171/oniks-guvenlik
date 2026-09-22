@@ -51,6 +51,11 @@ function ServicesContent({ products }: { products: Product[] }) {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeModalProduct, setActiveModalProduct] = useState<Product | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const modalGallery = useMemo(() => {
+    if (!activeModalProduct) return [];
+    return [activeModalProduct.image, ...(activeModalProduct.images ?? [])].filter(Boolean);
+  }, [activeModalProduct]);
 
   // Brands and categories are derived from the live product catalog, so a
   // new brand/category added in the admin panel automatically appears here
@@ -84,6 +89,10 @@ function ServicesContent({ products }: { products: Product[] }) {
       }
     }
   }, [searchParams, categories, products]);
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [activeModalProduct]);
 
   // Filtered Products
   const filteredProducts = useMemo(() => {
@@ -394,7 +403,7 @@ function ServicesContent({ products }: { products: Product[] }) {
               {/* Cover Image Header */}
               <div className="relative aspect-[2] w-full bg-[#f1f1f1] overflow-hidden border-b border-neutral-100 flex-shrink-0">
                 <img
-                  src={activeModalProduct.image}
+                  src={modalGallery[activeImageIndex] ?? activeModalProduct.image}
                   alt={activeModalProduct.name}
                   className="w-full h-full object-contain p-6"
                 />
@@ -415,6 +424,24 @@ function ServicesContent({ products }: { products: Product[] }) {
                 >
                   <X className="w-5 h-5 stroke-[2.5]" />
                 </button>
+
+                {/* Thumbnail strip, only shown when there's more than one photo */}
+                {modalGallery.length > 1 && (
+                  <div className="absolute bottom-6 right-6 flex gap-2 z-10">
+                    {modalGallery.map((src, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setActiveImageIndex(i)}
+                        className={`w-12 h-12 rounded-lg overflow-hidden border-2 bg-white transition-all ${
+                          i === activeImageIndex ? "border-[#000c2d] shadow-md" : "border-white/70 opacity-80 hover:opacity-100"
+                        }`}
+                        aria-label={`Fotoğraf ${i + 1}`}
+                      >
+                        <img src={src} alt="" className="w-full h-full object-contain p-1" />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Modal Body (Scrollable content) */}

@@ -36,6 +36,8 @@ export interface Product {
   description: string;
   specs: string[];
   image: string;
+  // Optional additional gallery photos beyond the primary cover (`image`).
+  images?: string[];
 }
 
 const COLLECTION = 'products';
