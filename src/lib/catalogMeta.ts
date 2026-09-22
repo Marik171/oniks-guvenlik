@@ -4,7 +4,8 @@
 // display copy for the categories/brands that shipped with the original
 // catalog — anything not listed here still works, just with a plainer label.
 export const CATEGORY_LABELS: Record<string, string> = {
-  interkom: "IP İnterkom & Diafon",
+  "ip-interkom": "IP İnterkom",
+  diafon: "Görüntülü Diafon",
   kamera: "Güvenlik Kamerası",
   uydu: "Merkezi Uydu & TV",
   akilliev: "Akıllı Ev Otomasyonu",
