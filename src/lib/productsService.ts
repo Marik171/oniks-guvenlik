@@ -41,6 +41,15 @@ export interface Product {
 }
 
 const COLLECTION = 'products';
+const META_DOC = 'meta/catalog';
+
+// Bumped on every product create/update/delete so the CI rebuild-trigger
+// check can detect changes by reading this one small doc instead of the
+// entire products collection.
+async function touchMeta(): Promise<void> {
+  if (!db) return;
+  await setDoc(doc(db, META_DOC), { updatedAt: serverTimestamp() }, { merge: true });
+}
 
 function slugify(input: string): string {
   return input
@@ -83,6 +92,7 @@ export const productsService = {
       ...product,
       updatedAt: serverTimestamp(),
     });
+    await touchMeta();
     return id;
   },
 
@@ -93,10 +103,12 @@ export const productsService = {
       { ...product, updatedAt: serverTimestamp() },
       { merge: true }
     );
+    await touchMeta();
   },
 
   async deleteProduct(id: string): Promise<void> {
     if (!db) throw new Error('Firestore is not configured.');
     await deleteDoc(doc(db, COLLECTION, id));
+    await touchMeta();
   },
 };

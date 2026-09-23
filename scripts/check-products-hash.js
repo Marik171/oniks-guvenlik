@@ -1,65 +1,60 @@
-// Fetches the current `products` collection from Firestore (public read) and
-// compares its hash against the committed .data-hash file. Writes a new hash
-// to .data-hash and sets a `changed` output for the workflow to branch on,
-// so the site only rebuilds/redeploys when a product was actually added,
-// edited, or deleted in the admin panel.
+// Fetches the small `meta/catalog` Firestore doc (public read), which the
+// admin panel bumps on every product create/update/delete, and compares its
+// updatedAt against the committed .data-hash file. Writes the new value to
+// .data-hash and sets a `changed` output for the workflow to branch on, so
+// the site only rebuilds/redeploys when a product actually changed.
+//
+// This reads exactly one document per check instead of the entire products
+// collection (previously ~400+ reads per check), keeping Firestore usage far
+// under the Spark (free) plan's 50,000 reads/day quota even when polled
+// every 5 minutes.
 const fs = require("fs");
-const crypto = require("crypto");
 const https = require("https");
 
 const PROJECT_ID = "oniks-guvenlik";
 const HASH_FILE = ".data-hash";
 
-function fetchAllProducts() {
+function fetchMetaDoc() {
   return new Promise((resolve, reject) => {
-    let allDocs = [];
-    let pageToken = "";
-
-    function fetchPage() {
-      const qs = pageToken ? `?pageToken=${encodeURIComponent(pageToken)}&pageSize=300` : `?pageSize=300`;
-      https
-        .get(
-          `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/products${qs}`,
-          (res) => {
-            let data = "";
-            res.on("data", (c) => (data += c));
-            res.on("end", () => {
-              if (res.statusCode !== 200) {
-                reject(new Error(`HTTP ${res.statusCode}: ${data}`));
-                return;
-              }
-              const json = JSON.parse(data);
-              allDocs = allDocs.concat(json.documents || []);
-              if (json.nextPageToken) {
-                pageToken = json.nextPageToken;
-                fetchPage();
-              } else {
-                resolve(allDocs);
-              }
-            });
-          }
-        )
-        .on("error", reject);
-    }
-    fetchPage();
+    https
+      .get(
+        `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/meta/catalog`,
+        (res) => {
+          let data = "";
+          res.on("data", (c) => (data += c));
+          res.on("end", () => {
+            if (res.statusCode === 404) {
+              resolve(null);
+              return;
+            }
+            if (res.statusCode !== 200) {
+              reject(new Error(`HTTP ${res.statusCode}: ${data}`));
+              return;
+            }
+            resolve(JSON.parse(data));
+          });
+        }
+      )
+      .on("error", reject);
   });
 }
 
 async function main() {
-  const docs = await fetchAllProducts();
-  const names = docs.map((d) => d.name).sort();
-  const hash = crypto.createHash("sha256").update(JSON.stringify(names) + JSON.stringify(docs)).digest("hex");
+  const doc = await fetchMetaDoc();
+  // Missing doc (shouldn't normally happen once seeded) is treated as
+  // "always changed" so the workflow safely falls back to rebuilding.
+  const marker = doc?.fields?.updatedAt?.timestampValue || `missing-${Date.now()}`;
 
   const previous = fs.existsSync(HASH_FILE) ? fs.readFileSync(HASH_FILE, "utf8").trim() : "";
-  const changed = hash !== previous;
+  const changed = marker !== previous;
 
-  fs.writeFileSync(HASH_FILE, hash + "\n");
+  fs.writeFileSync(HASH_FILE, marker + "\n");
 
   const output = process.env.GITHUB_OUTPUT;
   if (output) {
     fs.appendFileSync(output, `changed=${changed}\n`);
   }
-  console.log(`Products: ${docs.length}, changed: ${changed}`);
+  console.log(`Meta marker: ${marker}, changed: ${changed}`);
 }
 
 main().catch((err) => {
