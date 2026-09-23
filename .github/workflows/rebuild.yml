@@ -4,10 +4,20 @@ on:
   push:
     branches: [main]
   schedule:
-    # Every 5 minutes: cheap Firestore check, only rebuilds when product
-    # data actually changed (admin panel writes go straight to Firestore).
+    # GitHub's native cron is best-effort and can silently stop firing on
+    # low-traffic repos, so this is a backup only — the primary poll is the
+    # external repository_dispatch ping below.
     - cron: "*/5 * * * *"
+  repository_dispatch:
+    # Fired every 5 minutes by an external cron service (FastCron) hitting
+    # POST /repos/{owner}/{repo}/dispatches with event_type "poll-check".
+    # Unlike workflow_dispatch, this does NOT force a rebuild below — it
+    # still goes through the cheap Firestore check first.
+    types: [poll-check]
   workflow_dispatch:
+    # Manual "Run workflow" trigger (from the Actions tab or `gh workflow
+    # run`) always forces a full rebuild, for when you need to force-deploy
+    # regardless of the change check.
 
 permissions:
   contents: write
