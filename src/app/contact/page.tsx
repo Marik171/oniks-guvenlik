@@ -7,6 +7,7 @@ import ContactShowcase from "@/components/ContactShowcase";
 import Footer from "@/components/Footer";
 import { ChevronRight, PhoneCall, MapPin, Phone, Mail, Clock } from "lucide-react";
 import { motion } from "framer-motion";
+import { inboxService } from "@/lib/inboxService";
 
 const DISTRICTS = [
   "Arnavutköy", "Avcılar", "Bağcılar", "Bahçelievler", "Bakırköy",
@@ -18,10 +19,45 @@ const DISTRICTS = [
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    service: "",
+    message: "",
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+
+    const result = await inboxService.submitInquiry({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      service: formData.service,
+      message: formData.message,
+    });
+
+    setSubmitting(false);
+
+    if (!result.success) {
+      setError(result.error || "Mesajınız gönderilemedi. Lütfen tekrar deneyin.");
+      return;
+    }
+
     setSubmitted(true);
+    setFormData({ name: "", email: "", phone: "", service: "", message: "" });
     setTimeout(() => setSubmitted(false), 5000);
   };
 
@@ -100,12 +136,18 @@ export default function ContactPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <input
                       type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
                       placeholder="Adınız Soyadınız"
                       className="bg-transparent border-b border-neutral-200 focus:border-[#000c2d] outline-none py-3 px-1 text-sm md:text-base text-[#000c2d] placeholder-neutral-400 font-semibold transition-colors duration-200"
                       required
                     />
                     <input
                       type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
                       placeholder="E-posta Adresiniz"
                       className="bg-transparent border-b border-neutral-200 focus:border-[#000c2d] outline-none py-3 px-1 text-sm md:text-base text-[#000c2d] placeholder-neutral-400 font-semibold transition-colors duration-200"
                       required
@@ -115,14 +157,20 @@ export default function ContactPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <input
                       type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
                       placeholder="Telefon Numaranız"
                       className="bg-transparent border-b border-neutral-200 focus:border-[#000c2d] outline-none py-3 px-1 text-sm md:text-base text-[#000c2d] placeholder-neutral-400 font-semibold transition-colors duration-200"
                     />
-                    <select 
+                    <select
+                      name="service"
+                      value={formData.service}
+                      onChange={handleChange}
                       className="bg-transparent border-b border-neutral-200 focus:border-[#000c2d] outline-none py-3 px-1 text-sm md:text-base text-neutral-400 font-semibold cursor-pointer transition-colors duration-200"
                       required
                     >
-                      <option value="" disabled selected className="text-[#000c2d]">Talep Edilen Hizmet</option>
+                      <option value="" disabled className="text-[#000c2d]">Talep Edilen Hizmet</option>
                       <option value="diafon" className="text-[#000c2d]">Görüntülü Diafon / İnterkom</option>
                       <option value="kamera" className="text-[#000c2d]">Güvenlik Kamera Sistemleri</option>
                       <option value="akilliev" className="text-[#000c2d]">Akıllı Ev Otomasyonu</option>
@@ -134,23 +182,32 @@ export default function ContactPage() {
                   </div>
 
                   <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
                     placeholder="Lütfen güvenlik veya otomasyon sistemleri ile ilgili talebinizi açıklayın..."
                     rows={4}
                     className="bg-transparent border-b border-neutral-200 focus:border-[#000c2d] outline-none py-3 px-1 text-sm md:text-base text-[#000c2d] placeholder-neutral-400 font-semibold resize-none transition-colors duration-200"
                     required
                   />
 
+                  {error && (
+                    <p className="text-sm font-semibold text-red-600">{error}</p>
+                  )}
+
                   {/* Submit Button Group */}
                   <div className="flex items-center gap-1.5 mt-4 self-start">
                     <button
                       type="submit"
-                      className="bg-[#000c2d] text-white text-sm md:text-base font-semibold px-6 md:px-7 py-3.5 md:py-4 rounded-xl hover:bg-opacity-95 active:scale-95 transition-all duration-200 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#000c2d] focus-visible:outline-offset-2"
+                      disabled={submitting}
+                      className="bg-[#000c2d] text-white text-sm md:text-base font-semibold px-6 md:px-7 py-3.5 md:py-4 rounded-xl hover:bg-opacity-95 active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#000c2d] focus-visible:outline-offset-2"
                     >
-                      Mesaj Gönder
+                      {submitting ? "Gönderiliyor..." : "Mesaj Gönder"}
                     </button>
                     <button
                       type="submit"
-                      className="bg-[#000c2d] text-white p-3.5 md:p-4 rounded-xl hover:bg-opacity-95 active:scale-95 transition-all duration-200 flex items-center justify-center cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#000c2d] focus-visible:outline-offset-2"
+                      disabled={submitting}
+                      className="bg-[#000c2d] text-white p-3.5 md:p-4 rounded-xl hover:bg-opacity-95 active:scale-95 transition-all duration-200 flex items-center justify-center cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#000c2d] focus-visible:outline-offset-2"
                       aria-label="Mesajı gönder"
                     >
                       <ChevronRight className="w-5 h-5 stroke-[2.5]" />

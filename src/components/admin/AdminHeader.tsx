@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ShieldCheck, Plus, LogOut } from "lucide-react";
+import { ShieldCheck, Plus, LogOut, Mail } from "lucide-react";
 import { useAuth } from "@/lib/authContext";
 
 export default function AdminHeader() {
@@ -28,6 +28,15 @@ export default function AdminHeader() {
           </div>
         </Link>
         <div className="flex items-center gap-2">
+          {pathname !== "/admin/talepler" && (
+            <Link
+              href="/admin/talepler"
+              className="flex items-center gap-1.5 text-xs font-bold text-neutral-500 hover:text-[#000c2d] px-3 py-2.5 rounded-xl hover:bg-neutral-100 transition-colors"
+            >
+              <Mail className="w-3.5 h-3.5" />
+              Gelen Talepler
+            </Link>
+          )}
           {pathname !== "/admin/urunler/yeni" && (
             <Link
               href="/admin/urunler/yeni"
