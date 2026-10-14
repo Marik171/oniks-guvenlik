@@ -60,11 +60,17 @@ function ServicesContent({ products }: { products: Product[] }) {
   // Brands and categories are derived from the live product catalog, so a
   // new brand/category added in the admin panel automatically appears here
   // as its own filter — nothing hardcoded to keep in sync.
+  // Only categories that actually have products under the selected brand are
+  // offered, so picking a brand narrows the category row to relevant ones.
   const categories = useMemo(() => {
-    const distinct = Array.from(new Set(products.map((p) => p.category)));
+    const scoped = selectedBrand === "all" ? products : products.filter((p) => p.brand === selectedBrand);
+    const distinct = Array.from(new Set(scoped.map((p) => p.category)));
     distinct.sort((a, b) => getCategoryLabel(a).localeCompare(getCategoryLabel(b)));
     return [{ id: "all", label: "Tüm Ürünler" }, ...distinct.map((id) => ({ id, label: getCategoryLabel(id) }))];
-  }, [products]);
+  }, [products, selectedBrand]);
+
+  // A category picked under another brand falls back to "all" for the current one.
+  const activeCategory = categories.some((c) => c.id === selectedCategory) ? selectedCategory : "all";
 
   const brands = useMemo(() => {
     const distinct = Array.from(new Set(products.map((p) => p.brand))).sort((a, b) => a.localeCompare(b));
@@ -78,7 +84,7 @@ function ServicesContent({ products }: { products: Product[] }) {
       setSelectedBrand(brandParam);
     }
     const categoryParam = searchParams.get("category");
-    if (categoryParam && categories.some((c) => c.id === categoryParam)) {
+    if (categoryParam && products.some((p) => p.category === categoryParam)) {
       setSelectedCategory(categoryParam);
     }
     const productParam = searchParams.get("product");
@@ -88,7 +94,7 @@ function ServicesContent({ products }: { products: Product[] }) {
         setActiveModalProduct(found);
       }
     }
-  }, [searchParams, categories, products]);
+  }, [searchParams, products]);
 
   useEffect(() => {
     setActiveImageIndex(0);
@@ -98,7 +104,7 @@ function ServicesContent({ products }: { products: Product[] }) {
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
       const matchesBrand = selectedBrand === "all" || product.brand === selectedBrand;
-      const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+      const matchesCategory = activeCategory === "all" || product.category === activeCategory;
       const matchesSearch =
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -106,7 +112,7 @@ function ServicesContent({ products }: { products: Product[] }) {
         product.specs.some(spec => spec.toLowerCase().includes(searchQuery.toLowerCase()));
       return matchesBrand && matchesCategory && matchesSearch;
     });
-  }, [products, selectedBrand, selectedCategory, searchQuery]);
+  }, [products, selectedBrand, activeCategory, searchQuery]);
 
   // Group products by brand — each distinct brand gets its own section
   const brandSections = useMemo(() => {
@@ -199,7 +205,7 @@ function ServicesContent({ products }: { products: Product[] }) {
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
-                      selectedCategory === cat.id
+                      activeCategory === cat.id
                         ? "bg-[#000c2d]/10 text-[#000c2d] border border-[#000c2d]/25"
                         : "bg-white border border-neutral-200 hover:bg-neutral-100 text-neutral-500"
                     }`}
