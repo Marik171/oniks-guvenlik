@@ -130,10 +130,10 @@ function ServicesContent({ products }: { products: Product[] }) {
       <Navbar variant="light" />
 
       {/* Main Container */}
-      <main className="w-full pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col gap-12">
+      <main className="w-full pt-24 pb-24 px-6 md:px-12 max-w-7xl mx-auto flex flex-col gap-6">
         
         {/* Page Title & Tagline Banner */}
-        <div className="flex flex-col gap-6 max-w-4xl text-left">
+        <div className="flex flex-col gap-3 max-w-4xl text-left">
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -152,7 +152,7 @@ function ServicesContent({ products }: { products: Product[] }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-4xl md:text-6xl font-bold tracking-tight text-[#000c2d] leading-[1.15]"
+            className="text-2xl md:text-3xl font-bold tracking-tight text-[#000c2d] leading-[1.2]"
           >
             Profesyonel Donanımlar & <br />
             <span className="font-serif italic font-normal text-[#000c2d]">
@@ -164,24 +164,24 @@ function ServicesContent({ products }: { products: Product[] }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.2 }}
-            className="text-neutral-500 font-medium text-base md:text-lg leading-relaxed max-w-3xl mt-2"
+            className="text-neutral-500 font-medium text-sm md:text-base leading-relaxed max-w-3xl"
           >
             Görüntülü diafonda MAS, Multitek ve Audio yetkili servis ve bayi güvencesi; IP interkomda dünya standartlarında Fanvil çözümleri. Siteniz, apartmanınız veya villanız için en uygun donanımları keşfedin.
           </motion.p>
         </div>
 
         {/* Multi-Dimensional Filters Card */}
-        <div className="w-full bg-[#f1f1f1] rounded-[2rem] p-6 md:p-8 flex flex-col gap-6 mt-4 text-left">
+        <div className="w-full bg-[#f1f1f1] rounded-2xl p-4 md:p-5 flex flex-col gap-3 mt-0 text-left">
           
           {/* Row 1: Brand Filters */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
             <span className="text-[10px] font-extrabold tracking-widest text-[#000c2d] uppercase">Marka Seçimi</span>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {brands.map((brand) => (
                 <button
                   key={brand.id}
                   onClick={() => setSelectedBrand(brand.id)}
-                  className={`px-5 py-2 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 cursor-pointer border ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer border ${
                     selectedBrand === brand.id
                       ? "bg-[#000c2d] border-[#000c2d] text-white shadow-sm"
                       : "bg-white border-neutral-200 hover:bg-neutral-100 text-neutral-600"
@@ -194,17 +194,17 @@ function ServicesContent({ products }: { products: Product[] }) {
           </div>
 
           {/* Row 2: Category & Search */}
-          <div className="flex flex-col lg:flex-row gap-6 items-stretch lg:items-center justify-between border-t border-neutral-200/20 pt-6">
+          <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-end justify-between border-t border-neutral-200/20 pt-3">
             
             {/* Category Tabs Scroll Wrapper */}
-            <div className="flex flex-col gap-3 w-full lg:w-auto">
+            <div className="flex flex-col gap-1.5 w-full lg:w-auto">
               <span className="text-[10px] font-extrabold tracking-widest text-[#000c2d] uppercase">Kategori</span>
-              <div className="flex gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none max-w-full">
+              <div className="flex gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none max-w-full">
                 {categories.map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                       activeCategory === cat.id
                         ? "bg-[#000c2d]/10 text-[#000c2d] border border-[#000c2d]/25"
                         : "bg-white border border-neutral-200 hover:bg-neutral-100 text-neutral-500"
@@ -217,16 +217,16 @@ function ServicesContent({ products }: { products: Product[] }) {
             </div>
 
             {/* Search Box Input */}
-            <div className="flex flex-col gap-3 min-w-[280px] md:min-w-[340px]">
+            <div className="flex flex-col gap-1.5 min-w-[260px] md:min-w-[300px]">
               <span className="text-[10px] font-extrabold tracking-widest text-[#000c2d] uppercase">Arama</span>
               <div className="relative flex items-center">
-                <Search className="w-5 h-5 absolute left-4 text-neutral-400 pointer-events-none" />
+                <Search className="w-4 h-4 absolute left-3.5 text-neutral-400 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Ürün, model veya özellik ara..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white border border-neutral-200 focus:border-[#000c2d] focus:bg-white rounded-2xl py-3 pl-12 pr-10 text-sm text-[#000c2d] placeholder-neutral-400 font-semibold outline-none transition-all duration-200"
+                  className="w-full bg-white border border-neutral-200 focus:border-[#000c2d] focus:bg-white rounded-lg py-2 pl-10 pr-9 text-xs text-[#000c2d] placeholder-neutral-400 font-semibold outline-none transition-all duration-200"
                 />
                 {searchQuery && (
                   <button
@@ -243,7 +243,7 @@ function ServicesContent({ products }: { products: Product[] }) {
         </div>
 
         {/* Brand Grouped Sections Layout */}
-        <div className="w-full flex flex-col gap-20 mt-8">
+        <div className="w-full flex flex-col gap-12 mt-2">
           {Object.entries(brandSections)
             .filter(([brandName, products]) => {
               // Only show sections that have matching products
