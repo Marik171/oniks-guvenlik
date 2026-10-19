@@ -166,6 +166,7 @@ export default function Footer() {
                 { label: "Hakkımızda", href: "/about" },
                 { label: "Hizmetlerimiz", href: "/#services" },
                 { label: "İnterkom & Diafon", href: "/services" },
+                { label: "Dökümanlar", href: "/dokumanlar" },
                 { label: "İletişim", href: "/contact" }
               ].map((item) => (
                 <Link

@@ -6,6 +6,7 @@ import {
   setDoc,
   deleteDoc,
   serverTimestamp,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -38,6 +39,8 @@ export interface Product {
   image: string;
   // Optional additional gallery photos beyond the primary cover (`image`).
   images?: string[];
+  // Manual position set by drag-and-drop in the admin panel (lower = earlier).
+  order?: number;
 }
 
 const COLLECTION = 'products';
@@ -64,11 +67,25 @@ function slugify(input: string): string {
     .replace(/(^-|-$)/g, '');
 }
 
+// Firestore data includes `updatedAt` (a Timestamp class instance), which
+// can't be passed from Server to Client Components. It isn't part of Product.
+function toProduct(id: string, data: Record<string, unknown>): Product {
+  const rest = { ...data };
+  delete rest.updatedAt;
+  return { id, ...(rest as Omit<Product, 'id'>) };
+}
+
 export const productsService = {
   async getAllProducts(): Promise<Product[]> {
     if (!db) return [];
     const snap = await getDocs(collection(db, COLLECTION));
-    return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Product, 'id'>) }));
+    return snap.docs
+      .map((d) => toProduct(d.id, d.data()))
+      .sort(
+        (a, b) =>
+          (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER) ||
+          a.name.localeCompare(b.name)
+      );
   },
 
   async getDistinctValues(): Promise<{ brands: string[]; categories: string[] }> {
@@ -82,7 +99,7 @@ export const productsService = {
     if (!db) return null;
     const snap = await getDoc(doc(db, COLLECTION, id));
     if (!snap.exists()) return null;
-    return { id: snap.id, ...(snap.data() as Omit<Product, 'id'>) };
+    return toProduct(snap.id, snap.data());
   },
 
   async createProduct(product: Omit<Product, 'id'>, idHint?: string): Promise<string> {
@@ -103,6 +120,19 @@ export const productsService = {
       { ...product, updatedAt: serverTimestamp() },
       { merge: true }
     );
+    await touchMeta();
+  },
+
+  // Persists the manual order: product ids[i] gets order i.
+  async reorderProducts(ids: string[]): Promise<void> {
+    if (!db) throw new Error('Firestore is not configured.');
+    for (let i = 0; i < ids.length; i += 400) {
+      const batch = writeBatch(db);
+      ids.slice(i, i + 400).forEach((id, j) => {
+        batch.set(doc(db!, COLLECTION, id), { order: i + j }, { merge: true });
+      });
+      await batch.commit();
+    }
     await touchMeta();
   },
 

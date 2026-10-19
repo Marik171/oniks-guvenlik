@@ -75,7 +75,7 @@ export default function Navbar({ variant = "dark" }: NavbarProps) {
               className="h-5 md:h-6 w-auto object-contain"
             />
           </div>
-          <span className="text-lg md:text-xl font-bold tracking-tight text-white font-sans">
+          <span className="text-lg md:text-base lg:text-xl font-bold tracking-tight text-white font-sans whitespace-nowrap">
             ONİKS GÜVENLİK
           </span>
         </Link>
@@ -90,6 +90,7 @@ export default function Navbar({ variant = "dark" }: NavbarProps) {
             { label: "Hakkımızda", href: "/about" },
             { label: "Hizmetlerimiz", href: "/#services" },
             { label: "İnterkom & Diafon", href: "/services", hasDropdown: true },
+            { label: "Dökümanlar", href: "/dokumanlar" },
             { label: "Sıkça Sorulanlar", href: "/#faq" }
           ].map((item) => (
             <Link
@@ -102,7 +103,7 @@ export default function Navbar({ variant = "dark" }: NavbarProps) {
                   scheduleCloseMegaMenu();
                 }
               }}
-              className="relative px-4 py-2 text-sm font-semibold rounded-full transition-all duration-300 text-white/70 hover:text-white hover:bg-white/10 focus-visible:outline-white focus-visible:outline focus-visible:outline-2"
+              className="relative px-2.5 lg:px-3.5 py-2 text-xs lg:text-[13px] font-semibold whitespace-nowrap rounded-full transition-all duration-300 text-white/70 hover:text-white hover:bg-white/10 focus-visible:outline-white focus-visible:outline focus-visible:outline-2"
             >
               {item.label}
             </Link>
@@ -113,7 +114,7 @@ export default function Navbar({ variant = "dark" }: NavbarProps) {
         <div className="flex items-center gap-1.5">
           <Link
             href="/contact"
-            className="hidden sm:inline-flex bg-white text-[#000c2d] hover:bg-neutral-100 text-sm font-semibold px-5 py-3 rounded-xl active:scale-95 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+            className="hidden sm:inline-flex bg-white text-[#000c2d] hover:bg-neutral-100 text-xs lg:text-sm font-semibold px-4 lg:px-5 py-3 rounded-xl active:scale-95 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
           >
             İletişim
           </Link>
@@ -384,6 +385,7 @@ export default function Navbar({ variant = "dark" }: NavbarProps) {
                 { label: "Hakkımızda", href: "/about" },
                 { label: "Hizmetlerimiz", href: "/#services" },
                 { label: "İnterkom & Diafon", href: "/services" },
+                { label: "Dökümanlar", href: "/dokumanlar" },
                 { label: "Sıkça Sorulanlar", href: "/#faq" },
                 { label: "İletişim", href: "/contact" }
               ].map((item) => (

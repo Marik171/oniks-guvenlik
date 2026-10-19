@@ -17,6 +17,14 @@ export function getCategoryLabel(category: string): string {
   return CATEGORY_LABELS[category] ?? category;
 }
 
+export const BRAND_LABELS: Record<string, string> = {
+  "Diğer": "PTS & OGS",
+};
+
+export function getBrandLabel(brand: string): string {
+  return BRAND_LABELS[brand] ?? brand;
+}
+
 export const BRAND_TAGLINES: Record<string, { tagline: string; description: string }> = {
   Teknoline: {
     tagline: "Tek Kablo İnterkom Altyapısı & Merkezi Uydu Dağıtım Sistemleri",

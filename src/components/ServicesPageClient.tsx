@@ -27,7 +27,7 @@ import {
   Clock
 } from "lucide-react";
 import type { Product } from "@/lib/productsService";
-import { getCategoryLabel, getBrandInfo } from "@/lib/catalogMeta";
+import { getCategoryLabel, getBrandInfo, getBrandLabel } from "@/lib/catalogMeta";
 
 function ProductIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {
   switch (name) {
@@ -74,7 +74,7 @@ function ServicesContent({ products }: { products: Product[] }) {
 
   const brands = useMemo(() => {
     const distinct = Array.from(new Set(products.map((p) => p.brand))).sort((a, b) => a.localeCompare(b));
-    return [{ id: "all", label: "Tüm Markalar" }, ...distinct.map((id) => ({ id, label: id }))];
+    return [{ id: "all", label: "Tüm Markalar" }, ...distinct.map((id) => ({ id, label: getBrandLabel(id) }))];
   }, [products]);
 
   // Sync with URL query parameters
@@ -264,7 +264,7 @@ function ServicesContent({ products }: { products: Product[] }) {
                   <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 text-left border-b border-neutral-100 pb-6 mb-2">
                     <div className="flex flex-col gap-2 max-w-3xl">
                       <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#000c2d]">
-                        {brandName}
+                        {getBrandLabel(brandName)}
                       </h2>
                       <p className="text-sm font-semibold text-neutral-400">
                         {info.tagline}
@@ -300,7 +300,7 @@ function ServicesContent({ products }: { products: Product[] }) {
                           />
                           {/* Brand Overlay Tag */}
                           <span className="absolute top-4 left-4 text-[9px] font-extrabold tracking-widest bg-[#000c2d] text-white px-3 py-1 rounded-full uppercase shadow-sm z-10">
-                            {product.brand}
+                            {getBrandLabel(product.brand)}
                           </span>
                         </div>
 
@@ -416,7 +416,7 @@ function ServicesContent({ products }: { products: Product[] }) {
                 {/* Floating Brand Badge */}
                 <div className="absolute bottom-6 left-6 flex flex-col gap-2 z-10">
                   <span className="text-[10px] md:text-xs font-extrabold tracking-widest bg-[#000c2d] text-white px-3.5 py-1.5 rounded-full uppercase shadow-md w-fit leading-none">
-                    {activeModalProduct.brand}
+                    {getBrandLabel(activeModalProduct.brand)}
                   </span>
                 </div>
                 {/* Gradient overlays for text visibility and premium feel */}
