@@ -31,6 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.check.outputs.changed }}
+      marker: ${{ steps.check.outputs.marker }}
     steps:
       - uses: actions/checkout@v4
       - id: check
@@ -68,8 +69,11 @@ jobs:
           projectId: oniks-guvenlik
           channelId: live
 
-      - name: Refresh product-data hash (post-deploy)
-        run: node scripts/check-products-hash.js
+      # Record the marker the build STARTED from (read by the check job), not a
+      # fresh one: an admin edit/reorder made while this build ran must still
+      # look "changed" on the next poll, otherwise that change is never deployed.
+      - name: Record product-data hash
+        run: echo "${{ needs.check.outputs.marker }}" > .data-hash
 
       - name: Commit updated hash
         run: |

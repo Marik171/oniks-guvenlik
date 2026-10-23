@@ -52,7 +52,7 @@ async function main() {
 
   const output = process.env.GITHUB_OUTPUT;
   if (output) {
-    fs.appendFileSync(output, `changed=${changed}\n`);
+    fs.appendFileSync(output, `changed=${changed}\nmarker=${marker}\n`);
   }
   console.log(`Meta marker: ${marker}, changed: ${changed}`);
 }
