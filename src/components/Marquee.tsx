@@ -14,17 +14,6 @@ const IMAGES = [
   "/images/PHOTO-2026-07-21-15-42-03 2.webp",
   "/images/PHOTO-2026-07-21-15-42-03 3.webp",
   "/images/PHOTO-2026-07-21-15-42-03 4.webp",
-  "/PHOTO-2026-07-29-19-38-11.webp",
-  "/PHOTO-2026-07-29-19-38-11 2.webp",
-  "/PHOTO-2026-07-29-19-38-11 3.webp",
-  "/PHOTO-2026-07-29-19-38-11 4.webp",
-  "/PHOTO-2026-07-29-19-38-12.webp",
-  "/PHOTO-2026-07-29-19-38-12 2.webp",
-  "/PHOTO-2026-07-29-19-38-12 3.webp",
-  "/PHOTO-2026-07-29-19-38-12 4.webp",
-  "/PHOTO-2026-07-29-19-38-13.webp",
-  "/PHOTO-2026-07-29-19-38-13 2.webp",
-  "/PHOTO-2026-07-29-19-38-49.webp",
 ];
 
 export default function Marquee() {
