@@ -24,7 +24,7 @@ import { CSS } from "@dnd-kit/utilities";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { productsService, Product } from "@/lib/productsService";
-import { getCategoryLabel, getBrandLabel } from "@/lib/catalogMeta";
+import { getCategoryLabel, compareBrands, getBrandLabel } from "@/lib/catalogMeta";
 
 function SortableProductCard({ p, draggable }: { p: Product; draggable: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -106,7 +106,7 @@ export default function AdminDashboard() {
   // Same filter model as the live catalog: brands from the products, and only
   // categories that exist under the selected brand.
   const brands = useMemo(() => {
-    const distinct = Array.from(new Set(products.map((p) => p.brand))).sort((a, b) => a.localeCompare(b));
+    const distinct = Array.from(new Set(products.map((p) => p.brand))).sort(compareBrands);
     return [{ id: "all", label: "Tüm Markalar" }, ...distinct.map((id) => ({ id, label: getBrandLabel(id) }))];
   }, [products]);
 

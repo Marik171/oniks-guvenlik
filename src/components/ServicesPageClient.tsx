@@ -27,7 +27,7 @@ import {
   Clock
 } from "lucide-react";
 import type { Product } from "@/lib/productsService";
-import { getCategoryLabel, getBrandInfo, getBrandLabel } from "@/lib/catalogMeta";
+import { getCategoryLabel, getBrandInfo, compareBrands, getBrandLabel } from "@/lib/catalogMeta";
 
 function ProductIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {
   switch (name) {
@@ -73,7 +73,7 @@ function ServicesContent({ products }: { products: Product[] }) {
   const activeCategory = categories.some((c) => c.id === selectedCategory) ? selectedCategory : "all";
 
   const brands = useMemo(() => {
-    const distinct = Array.from(new Set(products.map((p) => p.brand))).sort((a, b) => a.localeCompare(b));
+    const distinct = Array.from(new Set(products.map((p) => p.brand))).sort(compareBrands);
     return [{ id: "all", label: "Tüm Markalar" }, ...distinct.map((id) => ({ id, label: getBrandLabel(id) }))];
   }, [products]);
 

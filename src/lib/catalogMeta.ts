@@ -25,6 +25,18 @@ export function getBrandLabel(brand: string): string {
   return BRAND_LABELS[brand] ?? brand;
 }
 
+// Display order of the brand filter; brands not listed go after these, alphabetically.
+const BRAND_ORDER = ["audio", "fanvil", "hikvision", "nexus visio", "teknoline", "makim", "diğer"];
+
+function brandRank(brand: string): number {
+  const i = BRAND_ORDER.indexOf(brand.toLocaleLowerCase("tr"));
+  return i === -1 ? BRAND_ORDER.length : i;
+}
+
+export function compareBrands(a: string, b: string): number {
+  return brandRank(a) - brandRank(b) || a.localeCompare(b);
+}
+
 export const BRAND_TAGLINES: Record<string, { tagline: string; description: string }> = {
   Teknoline: {
     tagline: "Tek Kablo İnterkom Altyapısı & Merkezi Uydu Dağıtım Sistemleri",
