@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, Suspense, useEffect } from "react";
+import React, { useState, useMemo, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
@@ -45,8 +45,19 @@ function ProductIcon({ name, className = "w-6 h-6" }: { name: string; className?
   }
 }
 
-function ServicesContent({ products }: { products: Product[] }) {
+// useSearchParams opts its component out of prerendering, so it lives in this
+// empty leaf inside its own Suspense: the catalog stays in the static HTML and
+// only this renders on the client.
+function UrlParams({ onChange }: { onChange: (p: URLSearchParams) => void }) {
   const searchParams = useSearchParams();
+  useEffect(() => {
+    onChange(new URLSearchParams(searchParams.toString()));
+  }, [searchParams, onChange]);
+  return null;
+}
+
+function ServicesContent({ products }: { products: Product[] }) {
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
   const [selectedBrand, setSelectedBrand] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -75,10 +86,11 @@ function ServicesContent({ products }: { products: Product[] }) {
   const brands = useMemo(() => {
     const distinct = Array.from(new Set(products.map((p) => p.brand))).sort(compareBrands);
     return [{ id: "all", label: "Tüm Markalar" }, ...distinct.map((id) => ({ id, label: getBrandLabel(id) }))];
-  }, [products]);
+  }, [searchParams, products]);
 
   // Sync with URL query parameters
   useEffect(() => {
+    if (!searchParams) return;
     const brandParam = searchParams.get("brand");
     if (brandParam) {
       setSelectedBrand(brandParam);
@@ -94,7 +106,7 @@ function ServicesContent({ products }: { products: Product[] }) {
         setActiveModalProduct(found);
       }
     }
-  }, [searchParams, products]);
+  }, [products]);
 
   useEffect(() => {
     setActiveImageIndex(0);
@@ -125,6 +137,9 @@ function ServicesContent({ products }: { products: Product[] }) {
 
   return (
     <div className="min-h-screen w-full bg-white text-securus-dark font-sans selection:bg-[#000c2d]/10 selection:text-[#000c2d]">
+      <Suspense fallback={null}>
+        <UrlParams onChange={setSearchParams} />
+      </Suspense>
       
       {/* Light Navbar Header */}
       <Navbar variant="light" />
@@ -525,14 +540,5 @@ function ServicesContent({ products }: { products: Product[] }) {
 
 
 export default function ServicesPageClient({ products }: { products: Product[] }) {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-white text-[#000c2d] gap-4">
-        <div className="w-12 h-12 rounded-full border-4 border-[#000c2d]/20 border-t-[#000c2d] animate-spin" />
-        <span className="text-sm font-bold tracking-wider opacity-75">Katalog Yükleniyor...</span>
-      </div>
-    }>
-      <ServicesContent products={products} />
-    </Suspense>
-  );
+  return <ServicesContent products={products} />;
 }
